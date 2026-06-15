@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* Manual dark mode via a `.dark` class on <html> (Tailwind v4). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --page: #f6f5f1;
+  --card: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.06);
+  --text: #1a1a1a;
+  --muted: #6b6b6b;
+  --positive: #1f9d63;
+  --negative: #db6a4b;
+}
+
+.dark {
+  --page: #1a1a1a;
+  --card: #232323;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text: #ededed;
+  --muted: #9a9a9a;
+  --positive: #35b87a;
+  --negative: #e5805f;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-card: var(--card);
+  --color-border: var(--card-border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--page);
+  color: var(--text);
+}
+
+/* Tabular figures for money — keeps columns aligned. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
