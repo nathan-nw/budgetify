@@ -16,5 +16,11 @@ export async function ensureSeedCategories(
   if (error || (count ?? 0) > 0) return;
 
   const rows = STARTER_CATEGORIES.map((c) => ({ ...c, user_id: userId }));
-  await supabase.from("categories").insert(rows);
+  // Upsert (ignore duplicates) rather than insert so two concurrent first-load
+  // renders can't both seed the starter set — the unique index on
+  // (user_id, name, type) makes the second call a no-op. Requires the index
+  // from supabase/migration.sql.
+  await supabase
+    .from("categories")
+    .upsert(rows, { onConflict: "user_id,name,type", ignoreDuplicates: true });
 }

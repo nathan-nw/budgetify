@@ -22,7 +22,7 @@ Tailwind CSS v4, Recharts, and lucide-react.
 ### 2. Configure environment variables
 
 Copy `.env.example` to `.env.local` and fill in the values from
-**Project Settings → API**:
+**Project Settings → API Keys**:
 
 ```bash
 cp .env.example .env.local
@@ -30,11 +30,14 @@ cp .env.example .env.local
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-publishable-or-anon-key>
 ```
 
-The anon key is safe to expose to the browser — Row Level Security restricts
-every query to the signed-in user's own rows.
+Paste the **publishable key** (`sb_publishable_...`) on newer projects, or the
+legacy **anon key** on older ones — both work identically with `@supabase/ssr`.
+This key is safe to expose to the browser; Row Level Security restricts every
+query to the signed-in user's own rows. (The env var keeps the `ANON_KEY` name
+by Supabase SSR convention regardless of which key value you use.)
 
 ### 3. Run
 

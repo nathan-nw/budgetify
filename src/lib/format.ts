@@ -50,3 +50,9 @@ export function formatMonthShort(monthKey: string): string {
   const [, m] = monthKey.split("-").map(Number);
   return monthNames[m - 1];
 }
+
+/** "Jun 1" from a 'YYYY-MM' key and a day-of-month. */
+export function formatMonthDay(monthKey: string, day: number): string {
+  const [, m] = monthKey.split("-").map(Number);
+  return `${monthNames[m - 1]} ${day}`;
+}

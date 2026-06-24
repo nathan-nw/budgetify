@@ -1,9 +1,17 @@
 import type { TransactionWithCategory } from "./types";
 
-export type TimeFrame = "6M" | "12M" | "YTD" | "Custom";
+export type TimeFrame = "1M" | "6M" | "12M" | "YTD" | "Custom";
 
 export interface MonthBucket {
   month: string; // 'YYYY-MM'
+  income: number;
+  expense: number;
+  net: number;
+}
+
+export interface WeekBucket {
+  startDay: number; // day-of-month the week starts on (1, 8, 15, ...)
+  endDay: number; // day-of-month the week ends on (clipped to the month)
   income: number;
   expense: number;
   net: number;
@@ -66,6 +74,9 @@ export function monthsForFrame(
 ): string[] {
   const current = monthKeyOf(now);
   switch (frame) {
+    case "1M":
+      // Summary totals span the current month; the chart shows it by week.
+      return [current];
     case "6M":
       return monthRange(addMonths(current, -5), current);
     case "12M":
@@ -78,6 +89,41 @@ export function monthsForFrame(
       return monthRange(start <= end ? start : end, start <= end ? end : start);
     }
   }
+}
+
+/**
+ * Weekly income/expense/net buckets within a single month, split into 7-day
+ * ranges from the 1st (1–7, 8–14, 15–21, 22–28, 29–end). The last bucket is
+ * short in months with fewer than 35 days.
+ */
+export function buildWeeklyBuckets(
+  transactions: TransactionWithCategory[],
+  month: string,
+): WeekBucket[] {
+  const [y, m] = month.split("-").map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+
+  const weeks: WeekBucket[] = [];
+  for (let start = 1; start <= daysInMonth; start += 7) {
+    weeks.push({
+      startDay: start,
+      endDay: Math.min(start + 6, daysInMonth),
+      income: 0,
+      expense: 0,
+      net: 0,
+    });
+  }
+
+  for (const tx of transactions) {
+    if (monthKey(tx.occurred_on) !== month) continue;
+    const day = Number(tx.occurred_on.slice(8, 10));
+    const week = weeks[Math.floor((day - 1) / 7)];
+    if (!week) continue;
+    if (tx.type === "income") week.income += tx.amount;
+    else week.expense += tx.amount;
+  }
+  for (const w of weeks) w.net = w.income - w.expense;
+  return weeks;
 }
 
 /** Monthly income/expense/net buckets for the given month keys, in order. */

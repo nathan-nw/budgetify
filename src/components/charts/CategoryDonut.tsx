@@ -27,9 +27,9 @@ export function CategoryDonut({
 }) {
   return (
     <Card className="h-full">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-base font-medium">Spending by category</h2>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             onClick={onPrev}

@@ -16,7 +16,7 @@ export function NavLink({
   return (
     <Link
       href={href}
-      className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+      className={`rounded-full px-2.5 py-1.5 text-sm transition-colors sm:px-3 ${
         active ? "bg-card text-text" : "text-muted hover:text-text"
       }`}
     >

@@ -20,24 +20,24 @@ export function RecentTransactions({
 }) {
   return (
     <Card>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h2 className="text-base font-medium">Recent transactions</h2>
           {filterLabel && (
             <button
               type="button"
               onClick={onClearFilter}
-              className="flex items-center gap-1 rounded-full bg-page px-2.5 py-1 text-xs text-muted hover:text-text"
+              className="flex min-w-0 items-center gap-1 rounded-full bg-page px-2.5 py-1 text-xs text-muted hover:text-text"
             >
-              {filterLabel}
-              <X size={12} />
+              <span className="truncate">{filterLabel}</span>
+              <X size={12} className="shrink-0" />
             </button>
           )}
         </div>
         <button
           type="button"
           onClick={onAdd}
-          className="flex items-center gap-1.5 rounded-full bg-text px-3 py-1.5 text-sm font-medium text-page transition-opacity hover:opacity-90"
+          className="flex shrink-0 items-center gap-1.5 rounded-full bg-text px-3 py-1.5 text-sm font-medium text-page transition-opacity hover:opacity-90"
         >
           <Plus size={16} /> Add
         </button>

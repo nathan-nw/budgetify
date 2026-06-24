@@ -2,13 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { SummaryCards } from "@/components/SummaryCards";
-import { CashFlowChart } from "@/components/charts/CashFlowChart";
+import {
+  CashFlowChart,
+  type CashFlowMode,
+} from "@/components/charts/CashFlowChart";
 import { CategoryDonut } from "@/components/charts/CategoryDonut";
 import { RecentTransactions } from "@/components/RecentTransactions";
 import { TransactionForm } from "@/components/TransactionForm";
+import type { CashFlowDatum } from "@/components/charts/CashFlowChart";
 import {
   addMonths,
   buildBuckets,
+  buildWeeklyBuckets,
   donutForMonth,
   monthKey,
   monthKeyOf,
@@ -16,10 +21,12 @@ import {
   totalsForMonths,
   type TimeFrame,
 } from "@/lib/analytics";
-import { formatMonthLabel } from "@/lib/format";
+import {
+  formatMonthDay,
+  formatMonthLabel,
+  formatMonthShort,
+} from "@/lib/format";
 import type { Category, TransactionWithCategory } from "@/lib/types";
-
-type Mode = "net" | "income" | "expense";
 
 export function DashboardClient({
   categories,
@@ -32,7 +39,7 @@ export function DashboardClient({
   const currentMonth = monthKeyOf(now);
 
   const [frame, setFrame] = useState<TimeFrame>("12M");
-  const [mode, setMode] = useState<Mode>("net");
+  const [mode, setMode] = useState<CashFlowMode>("net");
   const [customStart, setCustomStart] = useState(addMonths(currentMonth, -5));
   const [customEnd, setCustomEnd] = useState(currentMonth);
 
@@ -48,10 +55,29 @@ export function DashboardClient({
     () => monthsForFrame(frame, now, customStart, customEnd),
     [frame, now, customStart, customEnd],
   );
-  const buckets = useMemo(
-    () => buildBuckets(transactions, months),
-    [transactions, months],
-  );
+  // Cash-flow chart data: weekly buckets for the current month in "1M",
+  // monthly buckets otherwise. Normalized to a single shape for the chart.
+  const cashFlowData = useMemo<CashFlowDatum[]>(() => {
+    if (frame === "1M") {
+      return buildWeeklyBuckets(transactions, currentMonth).map((w) => ({
+        key: `${currentMonth}-w${w.startDay}`,
+        label: String(w.startDay),
+        tooltipLabel: `${formatMonthDay(currentMonth, w.startDay)} – ${w.endDay}`,
+        income: w.income,
+        expense: w.expense,
+        net: w.net,
+      }));
+    }
+    return buildBuckets(transactions, months).map((b) => ({
+      key: b.month,
+      label: formatMonthShort(b.month),
+      tooltipLabel: formatMonthLabel(b.month),
+      income: b.income,
+      expense: b.expense,
+      net: b.net,
+    }));
+  }, [frame, transactions, months, currentMonth]);
+
   const totals = useMemo(
     () => totalsForMonths(transactions, months),
     [transactions, months],
@@ -102,7 +128,7 @@ export function DashboardClient({
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <CashFlowChart
-            buckets={buckets}
+            data={cashFlowData}
             frame={frame}
             onFrameChange={setFrame}
             mode={mode}
