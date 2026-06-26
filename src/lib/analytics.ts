@@ -1,3 +1,4 @@
+import { formatMonthLabel, formatWeekRange } from "./format";
 import type { TransactionWithCategory } from "./types";
 
 export type TimeFrame = "1M" | "6M" | "12M" | "YTD" | "Custom";
@@ -190,4 +191,157 @@ export function donutForMonth(
   }
   const slices = [...groups.values()].sort((a, b) => b.amount - a.amount);
   return { slices, total };
+}
+
+// ---------------------------------------------------------------------------
+// Transactions page: grouping, filtering, sorting, totals (pure + testable).
+// ---------------------------------------------------------------------------
+
+export type GroupBy = "week" | "month" | "year";
+export type SortField = "date" | "amount";
+export type SortDir = "asc" | "desc";
+
+export interface FilterState {
+  categoryIds: string[]; // empty = all categories
+  includeArchived: boolean; // show transactions whose category is archived
+  from: string | null; // 'YYYY-MM-DD' inclusive lower bound
+  to: string | null; // 'YYYY-MM-DD' inclusive upper bound
+  query: string; // free-text match on note / category name
+}
+
+/** Per-column view state for the transactions page (grouping + sort + filter). */
+export interface ColumnState {
+  groupBy: GroupBy;
+  sortField: SortField;
+  sortDir: SortDir;
+  filter: FilterState;
+}
+
+export interface TxGroup {
+  key: string; // stable sort key ('2026-02-08' week-start / '2026-02' / '2026')
+  label: string; // human label ('Feb 8–14 2026', 'Feb 2026', '2026')
+  subtotal: number; // sum of the group's amounts
+  items: TransactionWithCategory[];
+}
+
+export interface ColumnTotals extends Totals {
+  count: number;
+}
+
+function parseISO(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function toISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Sunday–Saturday calendar week containing `isoDate`, as ISO endpoints. */
+export function weekRangeOf(isoDate: string): { start: string; end: string } {
+  const d = parseISO(isoDate);
+  const start = new Date(d);
+  start.setDate(d.getDate() - d.getDay()); // back up to Sunday
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  return { start: toISO(start), end: toISO(end) };
+}
+
+/** Stable, lexically-sortable group key for a date under the given grouping. */
+export function groupKeyOf(isoDate: string, groupBy: GroupBy): string {
+  if (groupBy === "year") return isoDate.slice(0, 4);
+  if (groupBy === "month") return isoDate.slice(0, 7);
+  return weekRangeOf(isoDate).start; // week → its Sunday
+}
+
+function groupLabel(key: string, groupBy: GroupBy): string {
+  if (groupBy === "year") return key;
+  if (groupBy === "month") return formatMonthLabel(key);
+  const { start, end } = weekRangeOf(key); // key is already the Sunday
+  return formatWeekRange(start, end);
+}
+
+/**
+ * Bucket transactions into ordered groups (most recent first) with a subtotal.
+ * Items within a group keep their incoming order, so sort before grouping.
+ */
+export function groupTransactions(
+  txs: TransactionWithCategory[],
+  groupBy: GroupBy,
+): TxGroup[] {
+  const map = new Map<string, TxGroup>();
+  for (const tx of txs) {
+    const key = groupKeyOf(tx.occurred_on, groupBy);
+    let group = map.get(key);
+    if (!group) {
+      group = { key, label: groupLabel(key, groupBy), subtotal: 0, items: [] };
+      map.set(key, group);
+    }
+    group.items.push(tx);
+    group.subtotal += tx.amount;
+  }
+  return [...map.values()].sort((a, b) => (a.key < b.key ? 1 : -1));
+}
+
+/** Income/expense/net/count totals for an already-filtered list. */
+export function totalsOf(txs: TransactionWithCategory[]): ColumnTotals {
+  let income = 0;
+  let expense = 0;
+  for (const tx of txs) {
+    if (tx.type === "income") income += tx.amount;
+    else expense += tx.amount;
+  }
+  return { income, expense, net: income - expense, count: txs.length };
+}
+
+/**
+ * Filter by category, archived-category visibility, date range, and free text.
+ * `archivedCategoryIds` is supplied by the caller since the joined category on
+ * a transaction doesn't carry `is_archived`.
+ */
+export function applyFilters(
+  txs: TransactionWithCategory[],
+  f: FilterState,
+  archivedCategoryIds?: Set<string>,
+): TransactionWithCategory[] {
+  const q = f.query.trim().toLowerCase();
+  const catSet = f.categoryIds.length ? new Set(f.categoryIds) : null;
+  return txs.filter((tx) => {
+    const catId = tx.category?.id ?? "uncategorized";
+    if (catSet && !catSet.has(catId)) return false;
+    if (!f.includeArchived && archivedCategoryIds?.has(catId)) return false;
+    if (f.from && tx.occurred_on < f.from) return false;
+    if (f.to && tx.occurred_on > f.to) return false;
+    if (q) {
+      const hay = `${tx.note ?? ""} ${tx.category?.name ?? ""}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+/** Sort a copy by date or amount, with a created_at tiebreak. */
+export function sortTransactions(
+  txs: TransactionWithCategory[],
+  field: SortField,
+  dir: SortDir,
+): TransactionWithCategory[] {
+  const sign = dir === "asc" ? 1 : -1;
+  return [...txs].sort((a, b) => {
+    let cmp =
+      field === "amount"
+        ? a.amount - b.amount
+        : a.occurred_on < b.occurred_on
+          ? -1
+          : a.occurred_on > b.occurred_on
+            ? 1
+            : 0;
+    if (cmp === 0)
+      cmp =
+        a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : 0;
+    return sign * cmp;
+  });
 }

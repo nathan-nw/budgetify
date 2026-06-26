@@ -48,6 +48,7 @@ export async function addTransaction(input: TransactionInput): Promise<Result> {
   if (error) return { error: error.message };
 
   revalidatePath("/");
+  revalidatePath("/transactions");
   return {};
 }
 
@@ -72,6 +73,7 @@ export async function updateTransaction(
   if (error) return { error: error.message };
 
   revalidatePath("/");
+  revalidatePath("/transactions");
   return {};
 }
 
@@ -81,5 +83,6 @@ export async function deleteTransaction(id: string): Promise<Result> {
   if (error) return { error: error.message };
 
   revalidatePath("/");
+  revalidatePath("/transactions");
   return {};
 }

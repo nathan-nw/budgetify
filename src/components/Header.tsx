@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeftRight, LayoutDashboard, Tags } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { SignOutButton } from "./SignOutButton";
 import { NavLink } from "./NavLink";
@@ -14,9 +15,16 @@ export function Header() {
           >
             Budgetify
           </Link>
-          <nav className="flex items-center">
-            <NavLink href="/">Dashboard</NavLink>
-            <NavLink href="/categories">Categories</NavLink>
+          <nav className="flex items-center gap-0.5 sm:gap-0">
+            <NavLink href="/" icon={<LayoutDashboard size={18} />}>
+              Dashboard
+            </NavLink>
+            <NavLink href="/transactions" icon={<ArrowLeftRight size={18} />}>
+              Transactions
+            </NavLink>
+            <NavLink href="/categories" icon={<Tags size={18} />}>
+              Categories
+            </NavLink>
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-2">

@@ -56,3 +56,18 @@ export function formatMonthDay(monthKey: string, day: number): string {
   const [, m] = monthKey.split("-").map(Number);
   return `${monthNames[m - 1]} ${day}`;
 }
+
+/**
+ * Calendar-week label from two 'YYYY-MM-DD' endpoints. Collapses the shared
+ * parts: "Feb 8–14 2026", cross-month "Feb 26 – Mar 4 2026", cross-year
+ * "Dec 28 2025 – Jan 3 2026".
+ */
+export function formatWeekRange(startISO: string, endISO: string): string {
+  const [sy, sm, sd] = startISO.split("-").map(Number);
+  const [ey, em, ed] = endISO.split("-").map(Number);
+  const sMon = monthNames[sm - 1];
+  const eMon = monthNames[em - 1];
+  if (sy === ey && sm === em) return `${sMon} ${sd}–${ed} ${sy}`;
+  if (sy === ey) return `${sMon} ${sd} – ${eMon} ${ed} ${sy}`;
+  return `${sMon} ${sd} ${sy} – ${eMon} ${ed} ${ey}`;
+}
