@@ -122,7 +122,7 @@ export function CashFlowChart({
   const labelByKey = new Map(data.map((d) => [d.key, d.label]));
 
   return (
-    <Card className="h-full">
+    <Card className="flex h-full flex-col">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <h2 className="text-base font-medium">Cash flow</h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -183,7 +183,7 @@ export function CashFlowChart({
         <p className="mb-3 text-xs text-muted">By week, this month</p>
       )}
 
-      <div className="h-64 w-full">
+      <div className="min-h-64 w-full flex-1">
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart

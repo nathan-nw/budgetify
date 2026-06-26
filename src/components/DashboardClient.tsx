@@ -61,7 +61,7 @@ export function DashboardClient({
     if (frame === "1M") {
       return buildWeeklyBuckets(transactions, currentMonth).map((w) => ({
         key: `${currentMonth}-w${w.startDay}`,
-        label: String(w.startDay),
+        label: `${w.startDay}–${w.endDay}`,
         tooltipLabel: `${formatMonthDay(currentMonth, w.startDay)} – ${w.endDay}`,
         income: w.income,
         expense: w.expense,
