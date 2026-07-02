@@ -18,7 +18,7 @@ import {
   monthKey,
   monthKeyOf,
   monthsForFrame,
-  totalsForMonths,
+  totalsForTimeframe,
   type TimeFrame,
 } from "@/lib/analytics";
 import {
@@ -26,14 +26,20 @@ import {
   formatMonthLabel,
   formatMonthShort,
 } from "@/lib/format";
-import type { Category, TransactionWithCategory } from "@/lib/types";
+import type {
+  Category,
+  DashboardTimeframe,
+  TransactionWithCategory,
+} from "@/lib/types";
 
 export function DashboardClient({
   categories,
   transactions,
+  summaryTimeframe,
 }: {
   categories: Category[];
   transactions: TransactionWithCategory[];
+  summaryTimeframe: DashboardTimeframe;
 }) {
   const now = useMemo(() => new Date(), []);
   const currentMonth = monthKeyOf(now);
@@ -78,9 +84,11 @@ export function DashboardClient({
     }));
   }, [frame, transactions, months, currentMonth]);
 
+  // Summary cards follow the saved preference timeframe, independent of the
+  // cash-flow chart's frame pills.
   const totals = useMemo(
-    () => totalsForMonths(transactions, months),
-    [transactions, months],
+    () => totalsForTimeframe(transactions, summaryTimeframe, now),
+    [transactions, summaryTimeframe, now],
   );
   const donut = useMemo(
     () => donutForMonth(transactions, donutMonth),

@@ -8,10 +8,12 @@ export function NavLink({
   href,
   icon,
   children,
+  iconOnly = false,
 }: {
   href: string;
   icon: ReactNode;
   children: ReactNode;
+  iconOnly?: boolean;
 }) {
   const pathname = usePathname();
   const active = pathname === href;
@@ -23,9 +25,16 @@ export function NavLink({
         active ? "bg-card text-text" : "text-muted hover:text-text"
       }`}
     >
-      {/* Icon on mobile, text label from sm up. */}
-      <span className="sm:hidden">{icon}</span>
-      <span className="hidden sm:inline">{children}</span>
+      {iconOnly ? (
+        // Icon at every breakpoint (used for the settings gear).
+        icon
+      ) : (
+        <>
+          {/* Icon on mobile, text label from sm up. */}
+          <span className="sm:hidden">{icon}</span>
+          <span className="hidden sm:inline">{children}</span>
+        </>
+      )}
     </Link>
   );
 }

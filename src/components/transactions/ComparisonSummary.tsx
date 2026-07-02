@@ -12,11 +12,13 @@ export function ComparisonSummary({
   expense,
   incomeCount,
   expenseCount,
+  periodLabel,
 }: {
   income: number;
   expense: number;
   incomeCount: number;
   expenseCount: number;
+  periodLabel: string;
 }) {
   const net = income - expense;
   const gross = income + expense;
@@ -25,6 +27,10 @@ export function ComparisonSummary({
 
   return (
     <Card>
+      <h2 className="mb-4 text-sm text-muted">
+        Summary · <span className="text-text">{periodLabel}</span>
+      </h2>
+
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Stat
           label={`Income · ${incomeCount}`}

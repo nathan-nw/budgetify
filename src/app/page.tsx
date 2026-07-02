@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ensureSeedCategories } from "@/lib/seed";
+import { getPreferences } from "@/lib/preferences";
 import { Header } from "@/components/Header";
 import { DashboardClient } from "@/components/DashboardClient";
 import type { Category, TransactionWithCategory } from "@/lib/types";
@@ -18,6 +19,8 @@ export default async function DashboardPage() {
   // Seed starter categories on first load if the user has none.
   await ensureSeedCategories(supabase, user.id);
 
+  const preferences = await getPreferences(supabase, user.id);
+
   const [{ data: categoriesData }, { data: txData }] = await Promise.all([
     supabase.from("categories").select("*").order("name", { ascending: true }),
     supabase
@@ -34,7 +37,11 @@ export default async function DashboardPage() {
     <div className="min-h-dvh">
       <Header />
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <DashboardClient categories={categories} transactions={transactions} />
+        <DashboardClient
+          categories={categories}
+          transactions={transactions}
+          summaryTimeframe={preferences.dashboard_timeframe}
+        />
       </main>
     </div>
   );

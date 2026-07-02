@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeftRight, LayoutDashboard, Tags } from "lucide-react";
+import { ArrowLeftRight, LayoutDashboard, Settings, Tags } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { SignOutButton } from "./SignOutButton";
 import { NavLink } from "./NavLink";
@@ -28,6 +28,9 @@ export function Header() {
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <NavLink href="/settings" icon={<Settings size={18} />} iconOnly>
+            Settings
+          </NavLink>
           <ThemeToggle />
           <SignOutButton />
         </div>

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getPreferences } from "@/lib/preferences";
 import { Header } from "@/components/Header";
 import { TransactionsClient } from "@/components/transactions/TransactionsClient";
 import type { Category, TransactionWithCategory } from "@/lib/types";
@@ -13,6 +14,8 @@ export default async function TransactionsPage() {
 
   // Middleware guards this route, but guard again for type-safety.
   if (!user) return null;
+
+  const preferences = await getPreferences(supabase, user.id);
 
   const [{ data: categoriesData }, { data: txData }] = await Promise.all([
     supabase.from("categories").select("*").order("name", { ascending: true }),
@@ -33,6 +36,7 @@ export default async function TransactionsPage() {
         <TransactionsClient
           categories={categories}
           transactions={transactions}
+          summaryTimeframe={preferences.transactions_summary_timeframe}
         />
       </main>
     </div>

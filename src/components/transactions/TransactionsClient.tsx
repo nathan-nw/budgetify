@@ -8,10 +8,15 @@ import { TransactionForm } from "@/components/TransactionForm";
 import {
   applyFilters,
   sortTransactions,
-  totalsOf,
+  totalsForTimeframe,
   type ColumnState,
 } from "@/lib/analytics";
-import type { Category, TransactionWithCategory } from "@/lib/types";
+import { formatMonthLabel } from "@/lib/format";
+import type {
+  Category,
+  TransactionsTimeframe,
+  TransactionWithCategory,
+} from "@/lib/types";
 
 function defaultColumnState(): ColumnState {
   return {
@@ -31,9 +36,11 @@ function defaultColumnState(): ColumnState {
 export function TransactionsClient({
   categories,
   transactions,
+  summaryTimeframe,
 }: {
   categories: Category[];
   transactions: TransactionWithCategory[];
+  summaryTimeframe: TransactionsTimeframe;
 }) {
   const expenseTxs = useMemo(
     () => transactions.filter((t) => t.type === "expense"),
@@ -67,6 +74,23 @@ export function TransactionsClient({
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<TransactionWithCategory | null>(null);
 
+  // Top summary scope comes from the saved preference, independent of the
+  // column filters below.
+  const now = useMemo(() => new Date(), []);
+  const summary = useMemo(
+    () => totalsForTimeframe(transactions, summaryTimeframe, now),
+    [transactions, summaryTimeframe, now],
+  );
+
+  const periodLabel =
+    summaryTimeframe === "month"
+      ? formatMonthLabel(
+          `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+        )
+      : summaryTimeframe === "year"
+        ? String(now.getFullYear())
+        : "All time";
+
   const expenseView = useMemo(
     () =>
       sortTransactions(
@@ -85,9 +109,6 @@ export function TransactionsClient({
       ),
     [incomeTxs, incomeState, archivedIds],
   );
-
-  const expenseTotals = useMemo(() => totalsOf(expenseView), [expenseView]);
-  const incomeTotals = useMemo(() => totalsOf(incomeView), [incomeView]);
 
   function openAdd() {
     setEditing(null);
@@ -112,10 +133,11 @@ export function TransactionsClient({
       </div>
 
       <ComparisonSummary
-        income={incomeTotals.income}
-        expense={expenseTotals.expense}
-        incomeCount={incomeTotals.count}
-        expenseCount={expenseTotals.count}
+        income={summary.income}
+        expense={summary.expense}
+        incomeCount={summary.incomeCount}
+        expenseCount={summary.expenseCount}
+        periodLabel={periodLabel}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">

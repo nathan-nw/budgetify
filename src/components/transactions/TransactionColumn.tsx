@@ -37,6 +37,7 @@ export function TransactionColumn({
 
   const accentText = accent === "income" ? "text-positive" : "text-negative";
   const sign = accent === "income" ? "+" : "−";
+  const total = transactions.reduce((s, t) => s + t.amount, 0);
 
   function toggleGroup(key: string) {
     setCollapsed((prev) => {
@@ -126,10 +127,16 @@ export function TransactionColumn({
     <Card className="flex flex-col">
       <div className="mb-4 flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-base font-medium">{title}</h2>
-          <span className="text-xs text-muted">
-            {transactions.length}{" "}
-            {transactions.length === 1 ? "entry" : "entries"}
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-base font-medium">{title}</h2>
+            <span className="text-xs text-muted">
+              {transactions.length}{" "}
+              {transactions.length === 1 ? "entry" : "entries"}
+            </span>
+          </div>
+          <span className={`tnum text-base font-semibold ${accentText}`}>
+            {sign}
+            {formatCurrency(total)}
           </span>
         </div>
         <ColumnControls

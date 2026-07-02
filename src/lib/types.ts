@@ -25,3 +25,16 @@ export interface Transaction {
 export interface TransactionWithCategory extends Transaction {
   category: Pick<Category, "id" | "name" | "color" | "type"> | null;
 }
+
+// Saved timeframe for the dashboard summary cards.
+export type DashboardTimeframe = "month" | "last6" | "last12" | "ytd" | "all";
+// Saved timeframe for the transactions summary card.
+export type TransactionsTimeframe = "month" | "year" | "all";
+
+// One per user (table `preferences`); see supabase/migration-preferences.sql.
+export interface Preferences {
+  user_id: string;
+  dashboard_timeframe: DashboardTimeframe;
+  transactions_summary_timeframe: TransactionsTimeframe;
+  updated_at: string;
+}

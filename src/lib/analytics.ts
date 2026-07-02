@@ -1,5 +1,9 @@
 import { formatMonthLabel, formatWeekRange } from "./format";
-import type { TransactionWithCategory } from "./types";
+import type {
+  DashboardTimeframe,
+  TransactionsTimeframe,
+  TransactionWithCategory,
+} from "./types";
 
 export type TimeFrame = "1M" | "6M" | "12M" | "YTD" | "Custom";
 
@@ -143,6 +147,59 @@ export function buildBuckets(
   }
   for (const b of map.values()) b.net = b.income - b.expense;
   return months.map((m) => map.get(m)!);
+}
+
+export interface TimeframeTotals extends Totals {
+  incomeCount: number;
+  expenseCount: number;
+}
+
+/**
+ * Totals (with income/expense counts) for a saved preference timeframe. Shared by
+ * the dashboard summary cards and the transactions summary; values overlap where
+ * the two preference sets coincide ('month'/'all'), and 'year' === 'ytd'.
+ */
+export function totalsForTimeframe(
+  transactions: TransactionWithCategory[],
+  timeframe: DashboardTimeframe | TransactionsTimeframe,
+  now: Date = new Date(),
+): TimeframeTotals {
+  let monthSet: Set<string> | null = null;
+  if (timeframe !== "all") {
+    const current = monthKeyOf(now);
+    let months: string[];
+    switch (timeframe) {
+      case "last6":
+        months = monthRange(addMonths(current, -5), current);
+        break;
+      case "last12":
+        months = monthRange(addMonths(current, -11), current);
+        break;
+      case "year":
+      case "ytd":
+        months = monthRange(`${now.getFullYear()}-01`, current);
+        break;
+      default: // "month"
+        months = [current];
+    }
+    monthSet = new Set(months);
+  }
+
+  let income = 0;
+  let expense = 0;
+  let incomeCount = 0;
+  let expenseCount = 0;
+  for (const tx of transactions) {
+    if (monthSet && !monthSet.has(monthKey(tx.occurred_on))) continue;
+    if (tx.type === "income") {
+      income += tx.amount;
+      incomeCount += 1;
+    } else {
+      expense += tx.amount;
+      expenseCount += 1;
+    }
+  }
+  return { income, expense, net: income - expense, incomeCount, expenseCount };
 }
 
 /** Income/expense/net totals across transactions whose month is in `months`. */

@@ -102,7 +102,7 @@ function Popover({
         {icon}
       </button>
       {open && (
-        <div className="absolute right-0 z-30 mt-2 w-64 rounded-xl border border-border bg-card p-3 shadow-lg">
+        <div className="absolute right-0 z-30 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card p-3 shadow-lg">
           {children}
         </div>
       )}
@@ -236,20 +236,25 @@ export function ColumnControls({
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1.5 text-xs">
-            <input
-              type="date"
-              value={filter.from ?? ""}
-              onChange={(e) => setFilter({ from: e.target.value || null })}
-              className="w-full rounded-lg border border-border bg-page px-2 py-1 outline-none"
-            />
-            <span className="text-muted">–</span>
-            <input
-              type="date"
-              value={filter.to ?? ""}
-              onChange={(e) => setFilter({ to: e.target.value || null })}
-              className="w-full rounded-lg border border-border bg-page px-2 py-1 outline-none"
-            />
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-8 shrink-0 text-muted">From</span>
+              <input
+                type="date"
+                value={filter.from ?? ""}
+                onChange={(e) => setFilter({ from: e.target.value || null })}
+                className="w-full min-w-0 rounded-lg border border-border bg-page px-2 py-1 outline-none"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-8 shrink-0 text-muted">To</span>
+              <input
+                type="date"
+                value={filter.to ?? ""}
+                onChange={(e) => setFilter({ to: e.target.value || null })}
+                className="w-full min-w-0 rounded-lg border border-border bg-page px-2 py-1 outline-none"
+              />
+            </div>
           </div>
 
           {filterActive && (
