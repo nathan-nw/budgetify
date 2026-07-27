@@ -38,6 +38,8 @@ export function TransactionColumn({
   const accentText = accent === "income" ? "text-positive" : "text-negative";
   const sign = accent === "income" ? "+" : "−";
   const total = transactions.reduce((s, t) => s + t.amount, 0);
+  const dateFiltered = Boolean(state.filter.from || state.filter.to);
+  const totalLabel = dateFiltered ? "Filtered" : "All time";
 
   function toggleGroup(key: string) {
     setCollapsed((prev) => {
@@ -134,9 +136,12 @@ export function TransactionColumn({
               {transactions.length === 1 ? "entry" : "entries"}
             </span>
           </div>
-          <span className={`tnum text-base font-semibold ${accentText}`}>
-            {sign}
-            {formatCurrency(total)}
+          <span className="flex items-baseline gap-1.5">
+            <span className="text-xs text-muted">{totalLabel}</span>
+            <span className={`tnum text-base font-semibold ${accentText}`}>
+              {sign}
+              {formatCurrency(total)}
+            </span>
           </span>
         </div>
         <ColumnControls
