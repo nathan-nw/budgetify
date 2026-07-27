@@ -8,7 +8,7 @@ import { groupTransactions, type ColumnState } from "@/lib/analytics";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { Category, TransactionWithCategory } from "@/lib/types";
 
-const PAGE = 50;
+const PAGE = 38;
 
 export function TransactionColumn({
   title,
@@ -64,11 +64,14 @@ export function TransactionColumn({
     const isCollapsed = collapsed.has(g.key);
     if (!isCollapsed && budget <= 0) continue; // hidden by paging
     rendered.push(
-      <div key={`h-${g.key}`}>
+      <div
+        key={`h-${g.key}`}
+        className="sticky top-14 z-10 -mx-5 border-b border-border bg-card px-5 sm:-mx-6 sm:px-6"
+      >
         <button
           type="button"
           onClick={() => toggleGroup(g.key)}
-          className="flex w-full items-center justify-between gap-2 py-2 text-left"
+          className="flex w-full items-center justify-between gap-2 py-2.5 text-left"
         >
           <span className="flex min-w-0 items-center gap-1.5">
             {isCollapsed ? (
@@ -76,7 +79,9 @@ export function TransactionColumn({
             ) : (
               <ChevronDown size={15} className="shrink-0 text-muted" />
             )}
-            <span className="truncate text-sm font-medium">{g.label}</span>
+            <span className="truncate text-sm font-semibold uppercase tracking-wide">
+              {g.label}
+            </span>
           </span>
           <span className={`tnum shrink-0 text-sm font-medium ${accentText}`}>
             {sign}
