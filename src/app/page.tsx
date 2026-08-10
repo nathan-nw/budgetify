@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ensureSeedCategories } from "@/lib/seed";
+import { materializeDueRecurring } from "@/lib/recurring";
 import { getPreferences } from "@/lib/preferences";
 import { Header } from "@/components/Header";
 import { DashboardClient } from "@/components/DashboardClient";
@@ -18,6 +19,8 @@ export default async function DashboardPage() {
 
   // Seed starter categories on first load if the user has none.
   await ensureSeedCategories(supabase, user.id);
+  // Catch up any recurring rules due since the last visit.
+  await materializeDueRecurring(supabase, user.id);
 
   const preferences = await getPreferences(supabase, user.id);
 

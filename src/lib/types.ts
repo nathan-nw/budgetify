@@ -18,6 +18,29 @@ export interface Transaction {
   amount: number;
   occurred_on: string; // 'YYYY-MM-DD'
   note: string | null;
+  recurring_id: string | null;
+  created_at: string;
+}
+
+export type RecurringFrequency =
+  | "daily"
+  | "weekly"
+  | "biweekly"
+  | "monthly"
+  | "yearly";
+
+export interface RecurringTransaction {
+  id: string;
+  user_id: string;
+  category_id: string | null;
+  type: TxType;
+  amount: number;
+  note: string | null;
+  frequency: RecurringFrequency;
+  start_date: string; // 'YYYY-MM-DD'
+  next_due: string; // 'YYYY-MM-DD'
+  end_date: string | null;
+  is_active: boolean;
   created_at: string;
 }
 
