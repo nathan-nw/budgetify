@@ -1,10 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Trash2 } from "lucide-react";
+import { Repeat, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
-import type { Category, TransactionWithCategory, TxType } from "@/lib/types";
+import type {
+  Category,
+  RecurringFrequency,
+  TransactionWithCategory,
+  TxType,
+} from "@/lib/types";
 import {
   addTransaction,
   deleteTransaction,
@@ -41,7 +47,13 @@ export function TransactionForm({
   );
   const [date, setDate] = useState(editing?.occurred_on ?? todayString());
   const [note, setNote] = useState(editing?.note ?? "");
+  const [repeat, setRepeat] = useState(false);
+  const [frequency, setFrequency] = useState<RecurringFrequency>("monthly");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  const isEditing = !!editing;
+  const isRecurringInstance = !!editing?.recurring_id;
 
   // Categories selectable for the chosen type: active ones, plus the currently
   // assigned (possibly archived) category when editing.
@@ -62,12 +74,20 @@ export function TransactionForm({
       setError("Enter a valid amount.");
       return;
     }
+    if (repeat && endDate && endDate < date) {
+      setError("End date must be after the start date.");
+      return;
+    }
     const input = {
       type,
       amount: amt,
       category_id: effectiveCategoryId || null,
       occurred_on: date,
       note: note.trim() || null,
+      recurring:
+        !isEditing && repeat
+          ? { frequency, end_date: endDate || null }
+          : null,
     };
     setError(null);
     startTransition(async () => {
@@ -170,6 +190,70 @@ export function TransactionForm({
           placeholder="optional"
           className="mb-5 w-full rounded-xl border border-border bg-page px-3 py-2.5 text-sm outline-none focus:border-text/30"
         />
+
+        {!isEditing && (
+          <div className="mb-5 rounded-xl border border-border p-3">
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={repeat}
+                onChange={(e) => setRepeat(e.target.checked)}
+                className="h-4 w-4 accent-text"
+              />
+              <Repeat size={16} className="text-muted" />
+              <span>Repeat this transaction</span>
+            </label>
+
+            {repeat && (
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className="mb-1.5 block text-sm text-muted">
+                    Frequency
+                  </label>
+                  <select
+                    value={frequency}
+                    onChange={(e) =>
+                      setFrequency(e.target.value as RecurringFrequency)
+                    }
+                    className="w-full rounded-xl border border-border bg-page px-3 py-2.5 text-sm outline-none focus:border-text/30"
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Biweekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm text-muted">
+                    Ends on (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={date}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-page px-3 py-2.5 text-sm outline-none focus:border-text/30"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isRecurringInstance && (
+          <p className="mb-4 text-xs text-muted">
+            Part of a recurring series —{" "}
+            <Link
+              href="/recurring"
+              onClick={onClose}
+              className="underline underline-offset-2 hover:text-text"
+            >
+              manage series
+            </Link>
+            .
+          </p>
+        )}
 
         {error && <p className="mb-4 text-sm text-negative">{error}</p>}
 

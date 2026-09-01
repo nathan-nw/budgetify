@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { TxType } from "@/lib/types";
+import { addRecurring } from "./recurring";
+import type { RecurringFrequency, TxType } from "@/lib/types";
 
 export interface TransactionInput {
   type: TxType;
@@ -10,6 +11,12 @@ export interface TransactionInput {
   category_id: string | null;
   occurred_on: string; // 'YYYY-MM-DD'
   note: string | null;
+  // When present on add, the app creates a recurring rule instead of a bare
+  // transaction; the rule's materializer produces the first occurrence.
+  recurring?: {
+    frequency: RecurringFrequency;
+    end_date: string | null;
+  } | null;
 }
 
 type Result = { error?: string };
@@ -35,6 +42,18 @@ function validate(input: TransactionInput): string | null {
 export async function addTransaction(input: TransactionInput): Promise<Result> {
   const invalid = validate(input);
   if (invalid) return { error: invalid };
+
+  if (input.recurring) {
+    return addRecurring({
+      type: input.type,
+      amount: input.amount,
+      category_id: input.category_id,
+      note: input.note?.trim() || null,
+      frequency: input.recurring.frequency,
+      start_date: input.occurred_on,
+      end_date: input.recurring.end_date,
+    });
+  }
 
   const { supabase, user } = await requireUser();
   const { error } = await supabase.from("transactions").insert({

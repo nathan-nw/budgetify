@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { ArrowLeftRight, LayoutDashboard, Settings, Tags } from "lucide-react";
+import {
+  ArrowLeftRight,
+  LayoutDashboard,
+  Repeat,
+  Settings,
+  Tags,
+} from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { SignOutButton } from "./SignOutButton";
 import { NavLink } from "./NavLink";
@@ -24,6 +30,9 @@ export function Header() {
             </NavLink>
             <NavLink href="/categories" icon={<Tags size={18} />}>
               Categories
+            </NavLink>
+            <NavLink href="/recurring" icon={<Repeat size={18} />}>
+              Recurring
             </NavLink>
           </nav>
         </div>
