@@ -71,3 +71,22 @@ export function formatWeekRange(startISO: string, endISO: string): string {
   if (sy === ey) return `${sMon} ${sd} – ${eMon} ${ed} ${sy}`;
   return `${sMon} ${sd} ${sy} – ${eMon} ${ed} ${ey}`;
 }
+
+/**
+ * Compact signed money for calendar cells: "+$1.2k", "−$42". Cents are
+ * dropped — the day panel shows the exact figure.
+ */
+export function formatCompactSigned(value: number): string {
+  const sign = value < 0 ? "−" : "+";
+  const abs = Math.abs(value);
+  if (abs >= 1000) {
+    const k = abs / 1000;
+    // Drop a trailing ".0" so $2,000 reads "$2k", not "$2.0k".
+    const digits = k >= 100 || Number.isInteger(Math.round(k * 10) / 10) ? 0 : 1;
+    return `${sign}$${k.toFixed(digits)}k`;
+  }
+  return `${sign}$${Math.round(abs)}`;
+}
+
+/** Sunday-first weekday labels for the calendar grid header. */
+export const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

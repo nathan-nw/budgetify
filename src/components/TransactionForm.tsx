@@ -29,11 +29,14 @@ export function TransactionForm({
   onClose,
   categories,
   editing,
+  initialDate,
 }: {
   open: boolean;
   onClose: () => void;
   categories: Category[];
   editing: TransactionWithCategory | null;
+  /** Pre-fills the date when adding (the calendar's selected day). */
+  initialDate?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -45,7 +48,9 @@ export function TransactionForm({
   const [categoryId, setCategoryId] = useState<string>(
     editing?.category_id ?? "",
   );
-  const [date, setDate] = useState(editing?.occurred_on ?? todayString());
+  const [date, setDate] = useState(
+    editing?.occurred_on ?? initialDate ?? todayString(),
+  );
   const [note, setNote] = useState(editing?.note ?? "");
   const [repeat, setRepeat] = useState(false);
   const [frequency, setFrequency] = useState<RecurringFrequency>("monthly");
