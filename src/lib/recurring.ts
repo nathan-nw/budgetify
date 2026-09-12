@@ -25,7 +25,9 @@ function daysInMonth(year: number, monthZeroBased: number): number {
   return new Date(Date.UTC(year, monthZeroBased + 1, 0)).getUTCDate();
 }
 
-function advance(date: string, frequency: RecurringFrequency): string {
+// Exported so the calendar can project future occurrences with the same
+// month-end-clamping math the materializer uses.
+export function advance(date: string, frequency: RecurringFrequency): string {
   const d = parse(date);
   switch (frequency) {
     case "daily":

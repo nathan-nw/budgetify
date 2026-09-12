@@ -61,3 +61,18 @@ export interface Preferences {
   transactions_summary_timeframe: TransactionsTimeframe;
   updated_at: string;
 }
+
+/**
+ * A future recurring occurrence that has not been materialized into a
+ * `transactions` row yet. Deliberately not a `Transaction` — it has no `id`
+ * and must never be passed to the transaction server actions.
+ */
+export interface ProjectedOccurrence {
+  recurring_id: string;
+  category: Pick<Category, "id" | "name" | "color" | "type"> | null;
+  type: TxType;
+  amount: number;
+  note: string | null;
+  occurred_on: string; // 'YYYY-MM-DD'
+  frequency: RecurringFrequency;
+}
