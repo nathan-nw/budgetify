@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowLeftRight,
+  CalendarDays,
   LayoutDashboard,
   Repeat,
   Settings,
@@ -27,6 +28,9 @@ export function Header() {
             </NavLink>
             <NavLink href="/transactions" icon={<ArrowLeftRight size={18} />}>
               Transactions
+            </NavLink>
+            <NavLink href="/calendar" icon={<CalendarDays size={18} />}>
+              Calendar
             </NavLink>
             <NavLink href="/categories" icon={<Tags size={18} />}>
               Categories

@@ -2,7 +2,7 @@
 
 import { Plus, X } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { formatDate, formatSigned } from "@/lib/format";
+import { TransactionRow } from "@/components/transactions/TransactionRow";
 import type { TransactionWithCategory } from "@/lib/types";
 
 export function RecentTransactions({
@@ -51,35 +51,7 @@ export function RecentTransactions({
         <ul className="divide-y divide-border">
           {transactions.map((tx) => (
             <li key={tx.id}>
-              <button
-                type="button"
-                onClick={() => onEdit(tx)}
-                className="flex w-full items-center justify-between gap-3 py-3 text-left"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: tx.category?.color ?? "#9A9A9A" }}
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm">
-                      {tx.note || tx.category?.name || "Transaction"}
-                    </p>
-                    <p className="truncate text-xs text-muted">
-                      {(tx.category?.name ?? "Uncategorized") +
-                        " · " +
-                        formatDate(tx.occurred_on)}
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`tnum shrink-0 text-sm font-medium ${
-                    tx.type === "income" ? "text-positive" : "text-negative"
-                  }`}
-                >
-                  {formatSigned(tx.amount, tx.type)}
-                </span>
-              </button>
+              <TransactionRow tx={tx} onClick={() => onEdit(tx)} />
             </li>
           ))}
         </ul>
